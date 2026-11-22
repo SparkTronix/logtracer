@@ -1,10 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
+using Microsoft.Win32;
 
 namespace LogTracer;
 
@@ -128,7 +132,9 @@ public partial class MainWindow : Window
 
     private bool MatchesFilter(object item)
     {
-        if (item is not EventRecord eventRecord)
+        if (item is not EventRecord eventRecord
+            || !TryGetBoundary(StartDatePicker, StartTimeTextBox, false, out var start)
+            || !TryGetBoundary(EndDatePicker, EndTimeTextBox, true, out var end))
         {
             return false;
         }
@@ -138,7 +144,9 @@ public partial class MainWindow : Window
         var selectedLog = LogComboBox.SelectedItem as string ?? "Все";
         var selectedLevel = LevelComboBox.SelectedItem as string ?? "Все";
 
-        return (selectedLog == "Все" || eventRecord.LogName == selectedLog)
+        return (start is null || eventRecord.Timestamp >= start)
+            && (end is null || eventRecord.Timestamp <= end)
+            && (selectedLog == "Все" || eventRecord.LogName == selectedLog)
             && (selectedLevel == "Все" || eventRecord.Level == selectedLevel)
             && (eventId.Length == 0 || eventRecord.EventId.ToString().Contains(eventId, StringComparison.Ordinal))
             && (searchText.Length == 0
@@ -146,6 +154,34 @@ public partial class MainWindow : Window
                 || eventRecord.Source.Contains(searchText, StringComparison.OrdinalIgnoreCase)
                 || eventRecord.Message.Contains(searchText, StringComparison.OrdinalIgnoreCase));
     }
+
+    private static bool TryGetBoundary(DatePicker datePicker, TextBox timeTextBox, bool isEnd, out DateTime? boundary)
+    {
+        boundary = null;
+
+        if (datePicker.SelectedDate is not DateTime date)
+        {
+            return true;
+        }
+
+        var text = timeTextBox.Text.Trim();
+        if (text.Length == 0)
+        {
+            boundary = isEnd ? date.Date.AddDays(1).AddTicks(-1) : date.Date;
+            return true;
+        }
+
+        if (!DateTime.TryParseExact(text, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+        {
+            return false;
+        }
+
+        boundary = date.Date + time.TimeOfDay;
+        return true;
+    }
+
+    private bool HasValidTimeFilters() => TryGetBoundary(StartDatePicker, StartTimeTextBox, false, out _)
+        && TryGetBoundary(EndDatePicker, EndTimeTextBox, true, out _);
 
     private void FilterChanged(object sender, RoutedEventArgs e)
     {
@@ -155,12 +191,78 @@ public partial class MainWindow : Window
         }
 
         _eventsView.Refresh();
-        StatusTextBlock.Text = $"Показано событий: {_eventsView.Cast<object>().Count()} из {_events.Count}.";
+        StatusTextBlock.Text = HasValidTimeFilters()
+            ? $"Показано событий: {_eventsView.Cast<object>().Count()} из {_events.Count}."
+            : "Введите время в формате ЧЧ:мм.";
+    }
+
+    private void ClearDateFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        StartDatePicker.SelectedDate = null;
+        EndDatePicker.SelectedDate = null;
+        StartTimeTextBox.Clear();
+        EndTimeTextBox.Clear();
     }
 
     private async void ReloadButton_Click(object sender, RoutedEventArgs e)
     {
         await LoadEventsAsync();
+    }
+
+    private async void ExportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog
+        {
+            DefaultExt = ".csv",
+            FileName = $"LogTracer-{DateTime.Now:yyyyMMdd-HHmmss}.csv",
+            Filter = "CSV-файл (*.csv)|*.csv"
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        var visibleEvents = _eventsView.Cast<EventRecord>().ToList();
+
+        try
+        {
+            await File.WriteAllTextAsync(dialog.FileName, BuildCsv(visibleEvents), new UTF8Encoding(true));
+            StatusTextBlock.Text = $"Сохранено событий: {visibleEvents.Count}.";
+        }
+        catch (Exception)
+        {
+            StatusTextBlock.Text = "Не удалось сохранить файл.";
+        }
+    }
+
+    private static string BuildCsv(IEnumerable<EventRecord> events)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("Время;Журнал;Уровень;ID;Источник;Сообщение");
+
+        foreach (var eventRecord in events)
+        {
+            builder.AppendLine(string.Join(';',
+                EscapeCsv(eventRecord.Timestamp.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)),
+                EscapeCsv(eventRecord.LogName),
+                EscapeCsv(eventRecord.Level),
+                EscapeCsv(eventRecord.EventId.ToString(CultureInfo.InvariantCulture)),
+                EscapeCsv(eventRecord.Source),
+                EscapeCsv(eventRecord.Message)));
+        }
+
+        return builder.ToString();
+    }
+
+    private static string EscapeCsv(string value)
+    {
+        if (value.Length > 0 && "=+-@".Contains(value[0]))
+        {
+            value = $"'{value}";
+        }
+
+        return $"\"{value.Replace("\"", "\"\"")}\"";
     }
 
     private void AutoRefreshModeChanged(object sender, RoutedEventArgs e)
@@ -245,7 +347,12 @@ public partial class MainWindow : Window
         EventIdTextBox.IsEnabled = !isLoading;
         LogComboBox.IsEnabled = !isLoading;
         LevelComboBox.IsEnabled = !isLoading;
+        StartDatePicker.IsEnabled = !isLoading;
+        StartTimeTextBox.IsEnabled = !isLoading;
+        EndDatePicker.IsEnabled = !isLoading;
+        EndTimeTextBox.IsEnabled = !isLoading;
         ReloadButton.IsEnabled = !isLoading;
+        ExportButton.IsEnabled = !isLoading;
         StatusTextBlock.Text = isLoading ? "Загрузка событий…" : StatusTextBlock.Text;
     }
 
