@@ -15,8 +15,9 @@ namespace LogTracer;
 public partial class MainWindow : Window
 {
     private const int EventsPerLog = 250;
-    private static readonly string[] LogNames = ["Application", "System", "Security"];
+    private static readonly string[] DefaultLogNames = ["Application", "System", "Security"];
     private readonly ObservableCollection<EventRecord> _events = [];
+    private readonly ObservableCollection<JournalOption> _journalOptions = [];
     private readonly ICollectionView _eventsView;
     private readonly DispatcherTimer _refreshTimer = new();
     private readonly List<EventLog> _eventWatchers = [];
@@ -31,14 +32,75 @@ public partial class MainWindow : Window
         _eventsView.Filter = MatchesFilter;
         EventsDataGrid.ItemsSource = _eventsView;
 
-        LogComboBox.ItemsSource = new[] { "Все", "Application", "System", "Security" };
+        LoadJournalOptions();
+        JournalOptionsListBox.ItemsSource = _journalOptions;
+        UpdateLogFilterOptions();
         LevelComboBox.ItemsSource = new[] { "Все", "Ошибка", "Предупреждение", "Сведения", "Аудит успеха", "Аудит отказа" };
-        LogComboBox.SelectedIndex = 0;
         LevelComboBox.SelectedIndex = 0;
 
         _refreshTimer.Tick += RefreshTimer_Tick;
         Loaded += async (_, _) => await LoadEventsAsync();
         Closing += (_, _) => StopAutoRefresh();
+    }
+
+    private void LoadJournalOptions()
+    {
+        var logNames = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        try
+        {
+            foreach (var eventLog in EventLog.GetEventLogs())
+            {
+                logNames.Add(eventLog.Log);
+                eventLog.Dispose();
+            }
+        }
+        catch (Exception)
+        {
+        }
+
+        logNames.UnionWith(DefaultLogNames);
+
+        foreach (var logName in logNames)
+        {
+            _journalOptions.Add(new JournalOption(logName, DefaultLogNames.Contains(logName, StringComparer.OrdinalIgnoreCase)));
+        }
+    }
+
+    private string[] GetSelectedLogNames() => _journalOptions
+        .Where(option => option.IsSelected)
+        .Select(option => option.Name)
+        .ToArray();
+
+    private void UpdateLogFilterOptions()
+    {
+        var selectedLog = LogComboBox.SelectedItem as string;
+        var logNames = GetSelectedLogNames();
+        LogComboBox.ItemsSource = new[] { "Все" }.Concat(logNames).ToArray();
+        LogComboBox.SelectedItem = logNames.Contains(selectedLog, StringComparer.OrdinalIgnoreCase) ? selectedLog : "Все";
+    }
+
+    private async void JournalSelectionChanged(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        UpdateLogFilterOptions();
+        RestartRealTimeUpdates();
+        await LoadEventsAsync();
+    }
+
+    private void RestartRealTimeUpdates()
+    {
+        if (_eventWatchers.Count == 0)
+        {
+            return;
+        }
+
+        StopAutoRefresh();
+        StartRealTimeUpdates();
     }
 
     private async Task LoadEventsAsync()
@@ -53,7 +115,8 @@ public partial class MainWindow : Window
 
         try
         {
-            var result = await Task.Run(ReadEvents);
+            var selectedLogNames = GetSelectedLogNames();
+            var result = await Task.Run(() => ReadEvents(selectedLogNames));
 
             _events.Clear();
             foreach (var eventRecord in result.Events)
@@ -73,12 +136,12 @@ public partial class MainWindow : Window
         }
     }
 
-    private static LoadResult ReadEvents()
+    private static LoadResult ReadEvents(IEnumerable<string> logNames)
     {
         var events = new List<EventRecord>();
         var errors = new List<string>();
 
-        foreach (var logName in LogNames)
+        foreach (var logName in logNames)
         {
             try
             {
@@ -291,7 +354,7 @@ public partial class MainWindow : Window
 
     private void StartRealTimeUpdates()
     {
-        foreach (var logName in LogNames)
+        foreach (var logName in GetSelectedLogNames())
         {
             EventLog? eventLog = null;
 
@@ -351,6 +414,7 @@ public partial class MainWindow : Window
         StartTimeTextBox.IsEnabled = !isLoading;
         EndDatePicker.IsEnabled = !isLoading;
         EndTimeTextBox.IsEnabled = !isLoading;
+        JournalOptionsListBox.IsEnabled = !isLoading;
         ReloadButton.IsEnabled = !isLoading;
         ExportButton.IsEnabled = !isLoading;
         StatusTextBlock.Text = isLoading ? "Загрузка событий…" : StatusTextBlock.Text;

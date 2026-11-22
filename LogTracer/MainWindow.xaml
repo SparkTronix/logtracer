@@ -50,16 +50,38 @@
             <Button x:Name="ReloadButton" Grid.Column="8" Padding="18,7" VerticalAlignment="Bottom" Click="ReloadButton_Click" Content="Обновить" />
         </Grid>
 
-        <StackPanel Grid.Row="2" Margin="0,0,0,12" Orientation="Horizontal" VerticalAlignment="Center">
-            <TextBlock Margin="0,0,12,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Период:" />
-            <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="С" />
-            <DatePicker x:Name="StartDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
-            <TextBox x:Name="StartTimeTextBox" Width="58" Margin="6,0,16,0" ToolTip="Время в формате ЧЧ:мм" TextChanged="FilterChanged" />
-            <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="По" />
-            <DatePicker x:Name="EndDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
-            <TextBox x:Name="EndTimeTextBox" Width="58" Margin="6,0,16,0" ToolTip="Время в формате ЧЧ:мм" TextChanged="FilterChanged" />
-            <Button Padding="12,5" Click="ClearDateFilterButton_Click" Content="Сбросить период" />
-        </StackPanel>
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Margin="0,0,12,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Период:" />
+                <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="С" />
+                <DatePicker x:Name="StartDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
+                <TextBox x:Name="StartTimeTextBox" Width="58" Margin="6,0,16,0" ToolTip="Время в формате ЧЧ:мм" TextChanged="FilterChanged" />
+                <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="По" />
+                <DatePicker x:Name="EndDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
+                <TextBox x:Name="EndTimeTextBox" Width="58" Margin="6,0,16,0" ToolTip="Время в формате ЧЧ:мм" TextChanged="FilterChanged" />
+                <Button Padding="12,5" Click="ClearDateFilterButton_Click" Content="Сбросить период" />
+            </StackPanel>
+
+            <Expander Grid.Column="2" Header="Журналы для загрузки">
+                <Border Margin="0,6,0,0" BorderBrush="#D0D0D0" BorderThickness="1" Padding="6">
+                    <ScrollViewer Height="150" VerticalScrollBarVisibility="Auto">
+                        <ListBox x:Name="JournalOptionsListBox" BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" Checked="JournalSelectionChanged" Unchecked="JournalSelectionChanged" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </ScrollViewer>
+                </Border>
+            </Expander>
+        </Grid>
 
         <DockPanel Grid.Row="3" Margin="0,0,0,12">
             <Button x:Name="ExportButton" DockPanel.Dock="Right" Padding="18,7" Click="ExportButton_Click" Content="Сохранить в CSV" />
