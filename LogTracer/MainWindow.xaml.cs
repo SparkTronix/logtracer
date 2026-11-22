@@ -30,8 +30,10 @@ public partial class MainWindow : Window
 
         _eventsView = CollectionViewSource.GetDefaultView(_events);
         _eventsView.Filter = MatchesFilter;
+        _eventsView.SortDescriptions.Add(new SortDescription(nameof(EventRecord.Timestamp), ListSortDirection.Descending));
         EventsDataGrid.ItemsSource = _eventsView;
 
+        InitializeTimePickers();
         LoadJournalOptions();
         JournalOptionsListBox.ItemsSource = _journalOptions;
         UpdateLogFilterOptions();
@@ -41,6 +43,21 @@ public partial class MainWindow : Window
         _refreshTimer.Tick += RefreshTimer_Tick;
         Loaded += async (_, _) => await LoadEventsAsync();
         Closing += (_, _) => StopAutoRefresh();
+    }
+
+    private void InitializeTimePickers()
+    {
+        var hours = Enumerable.Range(0, 24)
+            .Select(hour => hour.ToString("00", CultureInfo.InvariantCulture))
+            .ToArray();
+        var minutes = Enumerable.Range(0, 60)
+            .Select(minute => minute.ToString("00", CultureInfo.InvariantCulture))
+            .ToArray();
+
+        StartHourComboBox.ItemsSource = hours;
+        EndHourComboBox.ItemsSource = hours;
+        StartMinuteComboBox.ItemsSource = minutes;
+        EndMinuteComboBox.ItemsSource = minutes;
     }
 
     private void LoadJournalOptions()
@@ -125,6 +142,7 @@ public partial class MainWindow : Window
             }
 
             _eventsView.Refresh();
+            UpdateEventCounts();
             StatusTextBlock.Text = result.Errors.Count == 0
                 ? $"Загружено событий: {_eventsView.Cast<object>().Count()}."
                 : $"Загружено событий: {_eventsView.Cast<object>().Count()}. Недоступные журналы: {string.Join(", ", result.Errors)}.";
@@ -196,8 +214,8 @@ public partial class MainWindow : Window
     private bool MatchesFilter(object item)
     {
         if (item is not EventRecord eventRecord
-            || !TryGetBoundary(StartDatePicker, StartTimeTextBox, false, out var start)
-            || !TryGetBoundary(EndDatePicker, EndTimeTextBox, true, out var end))
+            || !TryGetBoundary(StartDatePicker, StartHourComboBox, StartMinuteComboBox, false, out var start)
+            || !TryGetBoundary(EndDatePicker, EndHourComboBox, EndMinuteComboBox, true, out var end))
         {
             return false;
         }
@@ -218,7 +236,7 @@ public partial class MainWindow : Window
                 || eventRecord.Message.Contains(searchText, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool TryGetBoundary(DatePicker datePicker, TextBox timeTextBox, bool isEnd, out DateTime? boundary)
+    private static bool TryGetBoundary(DatePicker datePicker, ComboBox hourComboBox, ComboBox minuteComboBox, bool isEnd, out DateTime? boundary)
     {
         boundary = null;
 
@@ -227,24 +245,39 @@ public partial class MainWindow : Window
             return true;
         }
 
-        var text = timeTextBox.Text.Trim();
-        if (text.Length == 0)
+        var hour = hourComboBox.SelectedItem as string;
+        var minute = minuteComboBox.SelectedItem as string;
+        if (hour is null && minute is null)
         {
             boundary = isEnd ? date.Date.AddDays(1).AddTicks(-1) : date.Date;
             return true;
         }
 
-        if (!DateTime.TryParseExact(text, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+        if (hour is null || minute is null)
         {
             return false;
         }
 
-        boundary = date.Date + time.TimeOfDay;
+        boundary = date.Date
+            .AddHours(int.Parse(hour, CultureInfo.InvariantCulture))
+            .AddMinutes(int.Parse(minute, CultureInfo.InvariantCulture));
         return true;
     }
 
-    private bool HasValidTimeFilters() => TryGetBoundary(StartDatePicker, StartTimeTextBox, false, out _)
-        && TryGetBoundary(EndDatePicker, EndTimeTextBox, true, out _);
+    private void UpdateEventCounts()
+    {
+        var visibleEvents = _eventsView.Cast<EventRecord>().ToList();
+
+        TotalEventsCountTextBlock.Text = visibleEvents.Count.ToString(CultureInfo.CurrentCulture);
+        ErrorEventsCountTextBlock.Text = visibleEvents.Count(eventRecord => eventRecord.Level == "Ошибка").ToString(CultureInfo.CurrentCulture);
+        WarningEventsCountTextBlock.Text = visibleEvents.Count(eventRecord => eventRecord.Level == "Предупреждение").ToString(CultureInfo.CurrentCulture);
+        InformationEventsCountTextBlock.Text = visibleEvents.Count(eventRecord => eventRecord.Level == "Сведения").ToString(CultureInfo.CurrentCulture);
+        SuccessAuditEventsCountTextBlock.Text = visibleEvents.Count(eventRecord => eventRecord.Level == "Аудит успеха").ToString(CultureInfo.CurrentCulture);
+        FailureAuditEventsCountTextBlock.Text = visibleEvents.Count(eventRecord => eventRecord.Level == "Аудит отказа").ToString(CultureInfo.CurrentCulture);
+    }
+
+    private bool HasValidTimeFilters() => TryGetBoundary(StartDatePicker, StartHourComboBox, StartMinuteComboBox, false, out _)
+        && TryGetBoundary(EndDatePicker, EndHourComboBox, EndMinuteComboBox, true, out _);
 
     private void FilterChanged(object sender, RoutedEventArgs e)
     {
@@ -254,17 +287,20 @@ public partial class MainWindow : Window
         }
 
         _eventsView.Refresh();
+        UpdateEventCounts();
         StatusTextBlock.Text = HasValidTimeFilters()
             ? $"Показано событий: {_eventsView.Cast<object>().Count()} из {_events.Count}."
-            : "Введите время в формате ЧЧ:мм.";
+            : "Выберите часы и минуты для обеих границ периода.";
     }
 
     private void ClearDateFilterButton_Click(object sender, RoutedEventArgs e)
     {
         StartDatePicker.SelectedDate = null;
         EndDatePicker.SelectedDate = null;
-        StartTimeTextBox.Clear();
-        EndTimeTextBox.Clear();
+        StartHourComboBox.SelectedItem = null;
+        StartMinuteComboBox.SelectedItem = null;
+        EndHourComboBox.SelectedItem = null;
+        EndMinuteComboBox.SelectedItem = null;
     }
 
     private async void ReloadButton_Click(object sender, RoutedEventArgs e)
@@ -411,9 +447,11 @@ public partial class MainWindow : Window
         LogComboBox.IsEnabled = !isLoading;
         LevelComboBox.IsEnabled = !isLoading;
         StartDatePicker.IsEnabled = !isLoading;
-        StartTimeTextBox.IsEnabled = !isLoading;
+        StartHourComboBox.IsEnabled = !isLoading;
+        StartMinuteComboBox.IsEnabled = !isLoading;
         EndDatePicker.IsEnabled = !isLoading;
-        EndTimeTextBox.IsEnabled = !isLoading;
+        EndHourComboBox.IsEnabled = !isLoading;
+        EndMinuteComboBox.IsEnabled = !isLoading;
         JournalOptionsListBox.IsEnabled = !isLoading;
         ReloadButton.IsEnabled = !isLoading;
         ExportButton.IsEnabled = !isLoading;

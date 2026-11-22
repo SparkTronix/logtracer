@@ -12,13 +12,52 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock FontSize="22" FontWeight="SemiBold" Text="Системные события Windows" />
 
-        <Grid Grid.Row="1" Margin="0,16,0,12">
+        <Border Grid.Row="1" Margin="0,12,0,16" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="3" Padding="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Margin="12,7">
+                    <TextBlock Foreground="DimGray" Text="Всего" />
+                    <TextBlock x:Name="TotalEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="12,7">
+                    <TextBlock Foreground="#D03B3B" Text="Ошибки" />
+                    <TextBlock x:Name="ErrorEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="12,7">
+                    <TextBlock Foreground="#8A5A00" Text="Предупреждения" />
+                    <TextBlock x:Name="WarningEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Margin="12,7">
+                    <TextBlock Foreground="#256ABF" Text="Сведения" />
+                    <TextBlock x:Name="InformationEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="4" Margin="12,7">
+                    <TextBlock Foreground="#006300" Text="Аудит успеха" />
+                    <TextBlock x:Name="SuccessAuditEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="5" Margin="12,7">
+                    <TextBlock Foreground="#EC835A" Text="Аудит отказа" />
+                    <TextBlock x:Name="FailureAuditEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="16" />
@@ -50,7 +89,7 @@
             <Button x:Name="ReloadButton" Grid.Column="8" Padding="18,7" VerticalAlignment="Bottom" Click="ReloadButton_Click" Content="Обновить" />
         </Grid>
 
-        <Grid Grid.Row="2" Margin="0,0,0,12">
+        <Grid Grid.Row="3" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="16" />
@@ -61,10 +100,14 @@
                 <TextBlock Margin="0,0,12,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Период:" />
                 <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="С" />
                 <DatePicker x:Name="StartDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
-                <TextBox x:Name="StartTimeTextBox" Width="58" Margin="6,0,16,0" ToolTip="Время в формате ЧЧ:мм" TextChanged="FilterChanged" />
+                <ComboBox x:Name="StartHourComboBox" Width="44" Margin="6,0,0,0" ToolTip="Часы" SelectionChanged="FilterChanged" />
+                <TextBlock Margin="3,0" VerticalAlignment="Center" Text=":" />
+                <ComboBox x:Name="StartMinuteComboBox" Width="44" Margin="0,0,16,0" ToolTip="Минуты" SelectionChanged="FilterChanged" />
                 <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="По" />
                 <DatePicker x:Name="EndDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
-                <TextBox x:Name="EndTimeTextBox" Width="58" Margin="6,0,16,0" ToolTip="Время в формате ЧЧ:мм" TextChanged="FilterChanged" />
+                <ComboBox x:Name="EndHourComboBox" Width="44" Margin="6,0,0,0" ToolTip="Часы" SelectionChanged="FilterChanged" />
+                <TextBlock Margin="3,0" VerticalAlignment="Center" Text=":" />
+                <ComboBox x:Name="EndMinuteComboBox" Width="44" Margin="0,0,16,0" ToolTip="Минуты" SelectionChanged="FilterChanged" />
                 <Button Padding="12,5" Click="ClearDateFilterButton_Click" Content="Сбросить период" />
             </StackPanel>
 
@@ -83,7 +126,7 @@
             </Expander>
         </Grid>
 
-        <DockPanel Grid.Row="3" Margin="0,0,0,12">
+        <DockPanel Grid.Row="4" Margin="0,0,0,12">
             <Button x:Name="ExportButton" DockPanel.Dock="Right" Padding="18,7" Click="ExportButton_Click" Content="Сохранить в CSV" />
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Margin="0,0,12,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Автообновление:" />
@@ -96,7 +139,7 @@
             </StackPanel>
         </DockPanel>
 
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" MinHeight="180" />
                 <RowDefinition Height="8" />
@@ -152,6 +195,6 @@
             </Border>
         </Grid>
 
-        <TextBlock x:Name="StatusTextBlock" Grid.Row="5" Margin="0,10,0,0" Foreground="DimGray" />
+        <TextBlock x:Name="StatusTextBlock" Grid.Row="6" Margin="0,10,0,0" Foreground="DimGray" />
     </Grid>
 </Window>
