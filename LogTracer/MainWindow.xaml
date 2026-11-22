@@ -5,8 +5,114 @@
         MinHeight="760"
         MinWidth="1000"
         Height="920"
-        Width="1280">
-    <Grid Margin="16">
+        Width="1280"
+        Background="#F3F3F3"
+        FontFamily="Segoe UI Variable, Segoe UI"
+        Foreground="#1A1A1A">
+    <Window.Resources>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#E1E1E1" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#666666" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#0067C0" />
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#005A9E" />
+
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
+        <Style x:Key="FilterLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,5" />
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="9,5" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#C8C8C8" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="7,4" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#C8C8C8" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="DatePicker">
+            <Setter Property="Height" Value="32" />
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#C8C8C8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#1A1A1A" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F5F5F5" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EAEAEA" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentHoverBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource AccentHoverBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F8F8F8" />
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="BorderBrush" Value="#E6E6E6" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -17,9 +123,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock FontSize="22" FontWeight="SemiBold" Text="Системные события Windows" />
+        <StackPanel Margin="0,0,0,18">
+            <TextBlock FontSize="26" FontWeight="SemiBold" Text="Системные события" />
+            <TextBlock Margin="0,3,0,0" Foreground="{StaticResource MutedTextBrush}" Text="Журналы Windows" />
+        </StackPanel>
 
-        <Border Grid.Row="1" Margin="0,12,0,16" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="3" Padding="0">
+        <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -30,171 +139,190 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Margin="12,7">
-                    <TextBlock Foreground="DimGray" Text="Всего" />
-                    <TextBlock x:Name="TotalEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                <StackPanel Margin="16,12">
+                    <TextBlock Foreground="{StaticResource MutedTextBrush}" FontSize="12" Text="Всего" />
+                    <TextBlock x:Name="TotalEventsCountTextBlock" Margin="0,3,0,0" FontSize="22" FontWeight="SemiBold" Text="0" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" Margin="12,7">
-                    <TextBlock Foreground="#D03B3B" Text="Ошибки" />
-                    <TextBlock x:Name="ErrorEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                <StackPanel Grid.Column="1" Margin="16,12">
+                    <TextBlock Foreground="#D03B3B" FontSize="12" Text="Ошибки" />
+                    <TextBlock x:Name="ErrorEventsCountTextBlock" Margin="0,3,0,0" FontSize="22" FontWeight="SemiBold" Text="0" />
                 </StackPanel>
-                <StackPanel Grid.Column="2" Margin="12,7">
-                    <TextBlock Foreground="#8A5A00" Text="Предупреждения" />
-                    <TextBlock x:Name="WarningEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                <StackPanel Grid.Column="2" Margin="16,12">
+                    <TextBlock Foreground="#8A5A00" FontSize="12" Text="Предупреждения" />
+                    <TextBlock x:Name="WarningEventsCountTextBlock" Margin="0,3,0,0" FontSize="22" FontWeight="SemiBold" Text="0" />
                 </StackPanel>
-                <StackPanel Grid.Column="3" Margin="12,7">
-                    <TextBlock Foreground="#256ABF" Text="Сведения" />
-                    <TextBlock x:Name="InformationEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                <StackPanel Grid.Column="3" Margin="16,12">
+                    <TextBlock Foreground="#256ABF" FontSize="12" Text="Сведения" />
+                    <TextBlock x:Name="InformationEventsCountTextBlock" Margin="0,3,0,0" FontSize="22" FontWeight="SemiBold" Text="0" />
                 </StackPanel>
-                <StackPanel Grid.Column="4" Margin="12,7">
-                    <TextBlock Foreground="#006300" Text="Аудит успеха" />
-                    <TextBlock x:Name="SuccessAuditEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                <StackPanel Grid.Column="4" Margin="16,12">
+                    <TextBlock Foreground="#006300" FontSize="12" Text="Аудит успеха" />
+                    <TextBlock x:Name="SuccessAuditEventsCountTextBlock" Margin="0,3,0,0" FontSize="22" FontWeight="SemiBold" Text="0" />
                 </StackPanel>
-                <StackPanel Grid.Column="5" Margin="12,7">
-                    <TextBlock Foreground="#EC835A" Text="Аудит отказа" />
-                    <TextBlock x:Name="FailureAuditEventsCountTextBlock" FontSize="18" FontWeight="SemiBold" Text="0" />
+                <StackPanel Grid.Column="5" Margin="16,12">
+                    <TextBlock Foreground="#B94A2E" FontSize="12" Text="Аудит отказа" />
+                    <TextBlock x:Name="FailureAuditEventsCountTextBlock" Margin="0,3,0,0" FontSize="22" FontWeight="SemiBold" Text="0" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <StackPanel>
-                <TextBlock Margin="0,0,0,4" Text="Поиск по источнику, сообщению и журналу" />
-                <TextBox x:Name="SearchTextBox" TextChanged="FilterChanged" />
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-                <TextBlock Margin="0,0,0,4" Text="ID события" />
-                <TextBox x:Name="EventIdTextBox" TextChanged="FilterChanged" />
-            </StackPanel>
-            <StackPanel Grid.Column="4">
-                <TextBlock Margin="0,0,0,4" Text="Журнал" />
-                <ComboBox x:Name="LogComboBox" SelectionChanged="FilterChanged" />
-            </StackPanel>
-            <StackPanel Grid.Column="6">
-                <TextBlock Margin="0,0,0,4" Text="Уровень" />
-                <ComboBox x:Name="LevelComboBox" SelectionChanged="FilterChanged" />
-            </StackPanel>
-            <Button x:Name="ReloadButton" Grid.Column="8" Padding="18,7" VerticalAlignment="Bottom" Click="ReloadButton_Click" Content="Обновить" />
-        </Grid>
+                <StackPanel>
+                    <TextBlock Style="{StaticResource FilterLabelStyle}" Text="Поиск" />
+                    <TextBox x:Name="SearchTextBox" TextChanged="FilterChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Style="{StaticResource FilterLabelStyle}" Text="ID события" />
+                    <TextBox x:Name="EventIdTextBox" TextChanged="FilterChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="4">
+                    <TextBlock Style="{StaticResource FilterLabelStyle}" Text="Журнал" />
+                    <ComboBox x:Name="LogComboBox" SelectionChanged="FilterChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="6">
+                    <TextBlock Style="{StaticResource FilterLabelStyle}" Text="Уровень" />
+                    <ComboBox x:Name="LevelComboBox" SelectionChanged="FilterChanged" />
+                </StackPanel>
+                <Button x:Name="ReloadButton" Grid.Column="8" Style="{StaticResource PrimaryButtonStyle}" Margin="0,17,0,0" Click="ReloadButton_Click" Content="Обновить" />
+            </Grid>
+        </Border>
 
-        <Grid Grid.Row="3" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="360" />
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="3" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Margin="0,0,12,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Период:" />
-                <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="С" />
-                <DatePicker x:Name="StartDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
-                <ComboBox x:Name="StartHourComboBox" Width="44" Margin="6,0,0,0" ToolTip="Часы" SelectionChanged="FilterChanged" />
-                <TextBlock Margin="3,0" VerticalAlignment="Center" Text=":" />
-                <ComboBox x:Name="StartMinuteComboBox" Width="44" Margin="0,0,16,0" ToolTip="Минуты" SelectionChanged="FilterChanged" />
-                <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="По" />
-                <DatePicker x:Name="EndDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
-                <ComboBox x:Name="EndHourComboBox" Width="44" Margin="6,0,0,0" ToolTip="Часы" SelectionChanged="FilterChanged" />
-                <TextBlock Margin="3,0" VerticalAlignment="Center" Text=":" />
-                <ComboBox x:Name="EndMinuteComboBox" Width="44" Margin="0,0,16,0" ToolTip="Минуты" SelectionChanged="FilterChanged" />
-                <Button Padding="12,5" Click="ClearDateFilterButton_Click" Content="Сбросить период" />
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Margin="0,0,14,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Период" />
+                    <TextBlock Margin="0,0,6,0" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Text="С" />
+                    <DatePicker x:Name="StartDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
+                    <ComboBox x:Name="StartHourComboBox" Width="48" Margin="6,0,0,0" ToolTip="Часы" SelectionChanged="FilterChanged" />
+                    <TextBlock Margin="3,0" VerticalAlignment="Center" Text=":" />
+                    <ComboBox x:Name="StartMinuteComboBox" Width="48" Margin="0,0,16,0" ToolTip="Минуты" SelectionChanged="FilterChanged" />
+                    <TextBlock Margin="0,0,6,0" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Text="По" />
+                    <DatePicker x:Name="EndDatePicker" Width="130" SelectedDateChanged="FilterChanged" />
+                    <ComboBox x:Name="EndHourComboBox" Width="48" Margin="6,0,0,0" ToolTip="Часы" SelectionChanged="FilterChanged" />
+                    <TextBlock Margin="3,0" VerticalAlignment="Center" Text=":" />
+                    <ComboBox x:Name="EndMinuteComboBox" Width="48" Margin="0,0,16,0" ToolTip="Минуты" SelectionChanged="FilterChanged" />
+                    <Button Style="{StaticResource SecondaryButtonStyle}" Click="ClearDateFilterButton_Click" Content="Сбросить" />
+                </StackPanel>
 
-            <Expander Grid.Column="2" Header="Журналы для загрузки">
-                <Border Margin="0,6,0,0" BorderBrush="#D0D0D0" BorderThickness="1" Padding="6">
-                    <ScrollViewer Height="150" VerticalScrollBarVisibility="Auto">
-                        <ListBox x:Name="JournalOptionsListBox" BorderThickness="0">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" Checked="JournalSelectionChanged" Unchecked="JournalSelectionChanged" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </ScrollViewer>
-                </Border>
-            </Expander>
-        </Grid>
+                <Expander Grid.Column="2" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Header="Выбор журналов">
+                    <Border Margin="0,10,0,0" BorderBrush="#E1E1E1" BorderThickness="1" CornerRadius="4" Padding="8">
+                        <ScrollViewer Height="150" VerticalScrollBarVisibility="Auto">
+                            <ListBox x:Name="JournalOptionsListBox" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" Checked="JournalSelectionChanged" Unchecked="JournalSelectionChanged" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                    </Border>
+                </Expander>
+            </Grid>
+        </Border>
 
-        <DockPanel Grid.Row="4" Margin="0,0,0,12">
-            <Button x:Name="ExportButton" DockPanel.Dock="Right" Padding="18,7" Click="ExportButton_Click" Content="Сохранить в CSV" />
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Margin="0,0,12,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Автообновление:" />
-                <RadioButton x:Name="AutoRefreshOffButton" Margin="0,0,12,0" GroupName="AutoRefresh" IsChecked="True" Tag="Off" Checked="AutoRefreshModeChanged">Выключено</RadioButton>
-                <RadioButton Margin="0,0,12,0" GroupName="AutoRefresh" Tag="RealTime" Checked="AutoRefreshModeChanged">В реальном времени</RadioButton>
-                <RadioButton Margin="0,0,12,0" GroupName="AutoRefresh" Tag="5" Checked="AutoRefreshModeChanged">5 секунд</RadioButton>
-                <RadioButton Margin="0,0,12,0" GroupName="AutoRefresh" Tag="10" Checked="AutoRefreshModeChanged">10 секунд</RadioButton>
-                <RadioButton Margin="0,0,12,0" GroupName="AutoRefresh" Tag="15" Checked="AutoRefreshModeChanged">15 секунд</RadioButton>
-                <RadioButton GroupName="AutoRefresh" Tag="30" Checked="AutoRefreshModeChanged">30 секунд</RadioButton>
-            </StackPanel>
-        </DockPanel>
+        <Border Grid.Row="4" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12" Padding="12,10">
+            <DockPanel>
+                <Button x:Name="ExportButton" DockPanel.Dock="Right" Style="{StaticResource SecondaryButtonStyle}" Click="ExportButton_Click" Content="Сохранить в CSV" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Margin="0,0,14,0" FontWeight="SemiBold" VerticalAlignment="Center" Text="Автообновление" />
+                    <RadioButton x:Name="AutoRefreshOffButton" Margin="0,0,14,0" GroupName="AutoRefresh" IsChecked="True" Tag="Off" Checked="AutoRefreshModeChanged">Выключено</RadioButton>
+                    <RadioButton Margin="0,0,14,0" GroupName="AutoRefresh" Tag="RealTime" Checked="AutoRefreshModeChanged">В реальном времени</RadioButton>
+                    <RadioButton Margin="0,0,14,0" GroupName="AutoRefresh" Tag="5" Checked="AutoRefreshModeChanged">5 секунд</RadioButton>
+                    <RadioButton Margin="0,0,14,0" GroupName="AutoRefresh" Tag="10" Checked="AutoRefreshModeChanged">10 секунд</RadioButton>
+                    <RadioButton Margin="0,0,14,0" GroupName="AutoRefresh" Tag="15" Checked="AutoRefreshModeChanged">15 секунд</RadioButton>
+                    <RadioButton GroupName="AutoRefresh" Tag="30" Checked="AutoRefreshModeChanged">30 секунд</RadioButton>
+                </StackPanel>
+            </DockPanel>
+        </Border>
 
         <Grid Grid.Row="5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" MinHeight="180" />
-                <RowDefinition Height="8" />
+                <RowDefinition Height="10" />
                 <RowDefinition Height="220" MinHeight="120" />
             </Grid.RowDefinitions>
 
-            <DataGrid x:Name="EventsDataGrid"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      IsReadOnly="True"
-                      SelectionMode="Single"
-                      HeadersVisibility="Column"
-                      GridLinesVisibility="Horizontal"
-                      AlternatingRowBackground="#F5F5F5">
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Level}" Value="Ошибка">
-                                <Setter Property="Background" Value="#FFF4CCCC" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-                <DataGrid.Columns>
-                    <DataGridTextColumn Width="160" Binding="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Header="Время" />
-                    <DataGridTextColumn Width="110" Binding="{Binding LogName}" Header="Журнал" />
-                    <DataGridTextColumn Width="105" Binding="{Binding Level}" Header="Уровень" />
-                    <DataGridTextColumn Width="90" Binding="{Binding EventId}" Header="ID" />
-                    <DataGridTextColumn Width="180" Binding="{Binding Source}" Header="Источник" />
-                    <DataGridTextColumn Width="*" Binding="{Binding Summary}" Header="Сообщение" />
-                </DataGrid.Columns>
-            </DataGrid>
+            <Border Style="{StaticResource CardBorderStyle}">
+                <DataGrid x:Name="EventsDataGrid"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="None"
+                          BorderThickness="0"
+                          FontSize="13"
+                          RowHeight="28"
+                          RowBackground="#FFFFFF"
+                          AlternatingRowBackground="#FAFAFA">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="MinHeight" Value="28" />
+                            <Setter Property="BorderBrush" Value="#EEEEEE" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Level}" Value="Ошибка">
+                                    <Setter Property="Background" Value="#FFF6F6" />
+                                </DataTrigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#DDEEFF" />
+                                    <Setter Property="Foreground" Value="#1A1A1A" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="160" Binding="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Header="Время" />
+                        <DataGridTextColumn Width="110" Binding="{Binding LogName}" Header="Журнал" />
+                        <DataGridTextColumn Width="120" Binding="{Binding Level}" Header="Уровень" />
+                        <DataGridTextColumn Width="90" Binding="{Binding EventId}" Header="ID" />
+                        <DataGridTextColumn Width="180" Binding="{Binding Source}" Header="Источник" />
+                        <DataGridTextColumn Width="*" Binding="{Binding Summary}" Header="Сообщение" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
 
-            <GridSplitter Grid.Row="1" Height="8" HorizontalAlignment="Stretch" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
+            <GridSplitter Grid.Row="1" Height="10" HorizontalAlignment="Stretch" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" />
 
-            <Border Grid.Row="2" BorderBrush="#D0D0D0" BorderThickness="1" Padding="12" DataContext="{Binding SelectedItem, ElementName=EventsDataGrid}">
+            <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Padding="16" DataContext="{Binding SelectedItem, ElementName=EventsDataGrid}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Margin="0,0,16,0" FontSize="16" FontWeight="SemiBold" Text="Выбранное событие" />
-                        <TextBlock Margin="0,0,12,0" Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
-                        <TextBlock Margin="0,0,12,0" Text="{Binding LogName}" />
-                        <TextBlock Margin="0,0,12,0" Text="{Binding Level}" />
-                        <TextBlock Margin="0,0,12,0" Text="{Binding EventId, StringFormat=ID: {0}}" />
-                        <TextBlock Text="{Binding Source}" />
+                        <TextBlock Margin="0,0,16,0" FontSize="15" FontWeight="SemiBold" Text="Выбранное событие" />
+                        <TextBlock Margin="0,0,12,0" Foreground="{StaticResource MutedTextBrush}" Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" />
+                        <TextBlock Margin="0,0,12,0" Foreground="{StaticResource MutedTextBrush}" Text="{Binding LogName}" />
+                        <TextBlock Margin="0,0,12,0" Foreground="{StaticResource MutedTextBrush}" Text="{Binding Level}" />
+                        <TextBlock Margin="0,0,12,0" Foreground="{StaticResource MutedTextBrush}" Text="{Binding EventId, StringFormat=ID: {0}}" />
+                        <TextBlock Foreground="{StaticResource MutedTextBrush}" Text="{Binding Source}" />
                     </StackPanel>
-                    <TextBox Grid.Row="1" Margin="0,10,0,0" BorderThickness="0" Background="Transparent" IsReadOnly="True" Text="{Binding Message}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
+                    <TextBox Grid.Row="1" Margin="0,12,0,0" BorderThickness="0" Background="Transparent" IsReadOnly="True" Padding="0" Text="{Binding Message}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
                 </Grid>
             </Border>
         </Grid>
 
-        <TextBlock x:Name="StatusTextBlock" Grid.Row="6" Margin="0,10,0,0" Foreground="DimGray" />
+        <TextBlock x:Name="StatusTextBlock" Grid.Row="6" Margin="4,12,0,0" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
     </Grid>
 </Window>
